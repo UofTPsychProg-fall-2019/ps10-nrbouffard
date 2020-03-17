@@ -57,7 +57,14 @@ ipip.l <- ipip %>%
 # create a boxplot that visualizes BMI distributions according to exercise habits, separately for females and males
 # include at least two customizations to the look of the boxplot 
 # check the documentation for options
-Q1 <- ggplot()
+Q1 <- ipip %>% 
+     ggplot(aes(x = exer, y = BMI, color = gender)) +
+     geom_boxplot( notch = TRUE) +
+     scale_color_manual(values=c("#9999CC", "#66CC99"))+
+     theme_bw(base_size = 14) +
+     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+     ggtitle('BMI by Exercise frequency')
+
 Q1
 ggsave('figures/Q1.pdf',units='in',width=4,height=5)
 
@@ -65,15 +72,30 @@ ggsave('figures/Q1.pdf',units='in',width=4,height=5)
 
 # create a scatter plot to visualize the relationship between income and BMI, coloring points according to gender
 # use geom_smooth to add linear model fit lines, separately for males and females
-Q2a <- ggplot(ipip,aes(x=logMedInc,y=BMI, color=gender))+
-    geom_point(size=.5,alpha=.4)+
-    geom_smooth(method='lm')
+Q2a <- ipip %>%  
+    ggplot(aes(x=logMedInc,y=BMI, color=gender))+
+    geom_point(size=1,alpha=.4)+
+    scale_color_manual(values=c("#9999CC", "#66CC99"))+
+    geom_smooth(method='lm') +
+    theme_bw(base_size = 14) +
+    theme(legend.position = c(.85, .85),legend.background=element_blank()) +
+    labs(x='income') +
+    ggtitle('BMI by income')
 Q2a
 ggsave('figures/Q2a.pdf',units='in',width=4,height=5)
 
 # there are some outlying lower income points, especially for females
 # recreate this graph filtering for log median income>10
-Q2b <- ggplot()
+Q2b <- ipip %>%  
+    filter(logMedInc >10) %>% 
+    ggplot(aes(x=logMedInc,y=BMI, color=gender))+
+    geom_point(size=1.25,alpha=.4)+
+    scale_color_manual(values=c("#9999CC", "#66CC99"))+
+    geom_smooth(method='lm') +
+    theme_bw(base_size = 14) +
+    theme(legend.position = c(.85, .85),legend.background=element_blank()) +
+    labs(x='income') +
+    ggtitle('BMI by income')
 Q2b
 ggsave('figures/Q2b.pdf',units='in',width=4,height=5)
 
@@ -85,7 +107,16 @@ ggsave('figures/Q2b.pdf',units='in',width=4,height=5)
 # the default range on the y-axis will be very large given the range of the data
 # add a +coord_cartesian(ylim = c(10, 12)) to rescale it.
 
-Q3 <- ggplot()
+Q3 <- ipip.l %>%  
+    ggplot(aes(x= exer,y=logMedInc, fill=gender))+
+    stat_summary(fun.y=mean, geom="bar", position=position_dodge(width=.9)) +
+    stat_summary(fun.data=smean.cl.boot(mean,conf.int=.95, B=100, na.rm=TRUE, reps=FALSE), geom="errorbar", position=position_dodge(width=.9), width=.3) +
+    scale_fill_manual(values=c("#9999CC", "#66CC99"))+
+    coord_cartesian(ylim = c(10, 12)) +
+    theme_bw(base_size = 14) +
+    theme(legend.position = c(.85, .85),legend.background=element_blank(), axis.text.x = element_text(angle = 45, hjust = 1)) +
+    labs(y='income') +
+    ggtitle('Income by exercise')
 Q3
 ggsave('figures/Q3.pdf',units='in',width=4,height=5)
 
