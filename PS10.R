@@ -107,16 +107,14 @@ ggsave('figures/Q2b.pdf',units='in',width=4,height=5)
 # the default range on the y-axis will be very large given the range of the data
 # add a +coord_cartesian(ylim = c(10, 12)) to rescale it.
 
-Q3 <- ipip.l %>%  
-    ggplot(aes(x= exer,y=logMedInc, fill=gender))+
-    stat_summary(fun.y=mean, geom="bar", position=position_dodge(width=.9)) +
-    stat_summary(fun.data=smean.cl.boot(mean,conf.int=.95, B=100, na.rm=TRUE, reps=FALSE), geom="errorbar", position=position_dodge(width=.9), width=.3) +
-    scale_fill_manual(values=c("#9999CC", "#66CC99"))+
+Q3 <- ipip %>%  
+    ggplot(aes(x= gender,y=logMedInc, color = exer, fill=exer))+
+    stat_summary(fun.y=mean, geom="bar", position=position_dodge(width=.9), alpha = .4) +
+    stat_summary(fun.data='mean_cl_boot', geom="errorbar", position=position_dodge(width=.9), width=.3) +
     coord_cartesian(ylim = c(10, 12)) +
     theme_bw(base_size = 14) +
-    theme(legend.position = c(.85, .85),legend.background=element_blank(), axis.text.x = element_text(angle = 45, hjust = 1)) +
     labs(y='income') +
-    ggtitle('Income by exercise')
+    ggtitle('Income by gender and exercise')
 Q3
 ggsave('figures/Q3.pdf',units='in',width=4,height=5)
 
@@ -126,7 +124,14 @@ ggsave('figures/Q3.pdf',units='in',width=4,height=5)
 # for each BMI category, separately for males and females
 # this is a lot to visualize in a single plot! use +facet_wrap(vars(trait)) to generate seperate plots for each personality trait
 
-Q4 <- ggplot()
+Q4 <- ipip.l %>%  
+    ggplot(aes(x=BMI_cat,y=value, color=gender))+
+    stat_summary(fun.data='mean_cl_boot', geom="pointrange",position=position_dodge(.5)) +
+    scale_color_manual(values=c("#9999CC", "#66CC99"))+
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    facet_wrap(vars(trait)) +
+    ggtitle('Trait by BMI category')
 Q4
 ggsave('figures/Q4.pdf',units='in',width=4,height=5)
 
@@ -135,12 +140,20 @@ ggsave('figures/Q4.pdf',units='in',width=4,height=5)
 
 # use dplyr functions to calculate the mean of each personality trait for each combination of gender, BMI group
 ipip.g <- ipip.l %>%
-    ...
+    group_by(trait,gender, BMI_cat) %>% 
+    summarise(trait_mean = mean(value))
 
 
 # plot the average value of personality trait (colored as separate lines), according to the BMI category
 # facet_warp gender so that you can see these relationships separately for females and males
-Q5 <- ggplot()
+Q5 <- ipip.g %>% 
+    ggplot(aes(x=BMI_cat, y= trait_mean, color = trait, group = trait))+
+    geom_point()+
+    geom_line()+
+    facet_wrap(~gender) +
+    theme_bw(base_size = 14) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    ggtitle('Trait mean x BMI_cat x gender')
 Q5
 ggsave('figures/Q5.pdf',units='in',width=4,height=5)
     
